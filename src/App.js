@@ -1,93 +1,93 @@
-import {useState, useEffect} from "react" //useEffect se utiliza cada vez que se renderiza nuestro componente
-import {Note} from "./components/Note.js"
-import { createNote } from "./services/notes/createNote.js"
-import { getAllNotes } from "./services/notes/getAllNotes.js"
+import React, { useState, useEffect } from 'react'
+import Note from './components/Note'
+import Notification from './components/Notification'
+import noteService from './services/notes'
 
+const App = () => {
+  const [notes, setNotes] = useState([]) 
+  const [newNote, setNewNote] = useState('')
+  const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState(null)
 
+  useEffect(() => {
+    noteService
+      .getAll()
+      .then(initialNotes => {
+        setNotes(initialNotes)
+      })
+  }, [])
 
-const App = () => { //declaramos las props para recibir las notas del index.js
+  const addNote = (event) => {
+    event.preventDefault()
+    const noteObject = {
+      content: newNote,
+      date: new Date().toISOString(),
+      important: Math.random() > 0.5,
+      id: notes.length + 1,
+    }
+  
+    noteService
+      .create(noteObject)
+      .then(returnedNote => {
+        setNotes(notes.concat(returnedNote))
+        setNewNote('')
+      })
+  }
 
-	const [notes, setNotes] = useState([]) //el valor inicial del useState son todas las notas del Index
-	const [newNote, setNewNote] = useState("")
-	const [loading, setLoading] = useState(false)
+  const toggleImportanceOf = (id) => {
+    const note = notes.find(n => n.id === id)
+    const changedNote = { ...note, important: !note.important }
+  
+    noteService
+      .update(id, changedNote)
+      .then(returnedNote => {
+        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
+      })
+      .catch(error => {
+        setErrorMessage(
+          `Note '${note.content}' was already removed from server`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)   
+      })
+  }
 
-	const [username, setUsername] = useState("")
-	const [password, setPassword] = useState("")
+  const handleNoteChange = (event) => {
+    setNewNote(event.target.value)
+  }
 
-	useEffect(() => {
-		setLoading(true)
-		getAllNotes().then((notes) =>{
-			setNotes(notes)
-			setLoading(false)
-		})
-			
-	}, []) // en este useEffect decimos que mientras esta tomamndo el fetch de posts, un SetLoading esta en true. Que pone un texto de "cargando"
+  const notesToShow = showAll
+    ? notes
+    : notes.filter(note => note.important)
 
-	
+  return (
+    <div>
+      <h1>Notes</h1>
+      <Notification message={errorMessage} />
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? 'important' : 'all' }
+        </button>
+      </div>      
+      <ul>
+        {notesToShow.map((note, i) => 
+          <Note
+            key={i}
+            note={note} 
+            toggleImportance={() => toggleImportanceOf(note.id)}
+          />
+        )}
+      </ul>
+      <form onSubmit={addNote}>
+        <input
+          value={newNote}
+          onChange={handleNoteChange}
+        />
+        <button type="submit">save</button>
+      </form>   
+    </div>
+  )
+}
 
-	const handleChange = (event) =>{
-		setNewNote(event.target.value) // guardamos en setNewNote el event.target.value para poder pasarselo a newnote luego
-	} 
-	//input recibe una variable OnChange que usa este handle change. Manejando que hacer cuando algo cambia en el input
-
-
-	const handleNoteChange = (event) =>{
-		event.preventDefault()
-
-		const noteToAddToState = {
-			title: newNote,
-			body: newNote,
-			userdId: 1
-		}
-		createNote(noteToAddToState)
-		.then(nota => {
-			setNotes((prevNotes) => prevNotes.concat(nota))
-		})
-		.catch((e) =>{
-			console.error(e)
-		})
-
-		setNewNote("") //simplemente reseteamos el input
-	}
-
-	const handleSubmit = (event) =>{
-		event.preventDefault()
-
-		console.log("this is submit")
-	}
-
-	return (
-		<div>
-			<h1>Notes</h1>
-			{ loading ? "Cargando..." : ""}
-		<form onSubmit={handleSubmit}>
-			<input
-			type="text"
-			value={username}
-			name="Username"
-			placeholder="Username"
-			onChange={({target}) => setUsername(target.value)}
-			/>
-			<input
-			type="text"
-			value={password}
-			name="Password"
-			placeholder="Password"
-			onChange={({target}) => setPassword(target.value)}
-			/>
-			<button>
-				Login
-			</button>
-		</form>
-			{
-				notes
-				.map(note => <Note key={note.id} {...note}/>)
-			} 
-			<form onSubmit={handleNoteChange}>
-				<input type="text" onChange={handleChange} value={newNote}/>   
-				<button>Crear Nota</button>
-			</form>
-		</div> 
-	) // Devolvemos en App un map que tome cada nota y en usamos el componente Note, pasandole los parametros de content, date y id para la key
-} // la key debe usarse solamente donde se este renderizando. no al modelar el componente
-export default App;
+export default App 
