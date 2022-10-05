@@ -1,11 +1,10 @@
-export const Note = (props) =>{
-	const {content, date} = props
+export const Note = ({title, body}) =>{
 
 	return <div>
-		<p>
-			{content}
-		</p>
-		<time>{date}</time>
+		<h2>
+			{title}
+		</h2>
+		<p>{body}</p>
 	</div>
 } // creamos un componente de NOtas que recibe como parametro el id, contenido y fecha de la nota que reciba
 

@@ -1,15 +1,25 @@
-import {useState} from "react"
+import {useState, useEffect} from "react" //useEffect se utiliza cada vez que se renderiza nuestro componente
 import {Note} from "./components/Note.js"
+import { createNote } from "./services/notes/createNote.js"
+import { getAllNotes } from "./services/notes/getAllNotes.js"
 
 
 
+const App = () => { //declaramos las props para recibir las notas del index.js
 
-
-const App = (props) => { //declaramos las props para recibir las notas del index.js
-
-	const [notes, setNotes] = useState(props.notes) //el valor inicial del useState son todas las notas del Index
+	const [notes, setNotes] = useState([]) //el valor inicial del useState son todas las notas del Index
 	const [newNote, setNewNote] = useState("")
-	const [showAll, setShowAll] = useState(true)
+	const [loading, setLoading] = useState(false)
+	useEffect(() => {
+		setLoading(true)
+		getAllNotes().then((notes) =>{
+			setNotes(notes)
+			setLoading(false)
+		})
+			
+	}, []) // en este useEffect decimos que mientras esta tomamndo el fetch de posts, un SetLoading esta en true. Que pone un texto de "cargando"
+
+	
 
 	const handleChange = (event) =>{
 		setNewNote(event.target.value) // guardamos en setNewNote el event.target.value para poder pasarselo a newnote luego
@@ -21,33 +31,29 @@ const App = (props) => { //declaramos las props para recibir las notas del index
 		event.preventDefault()
 
 		const noteToAddToState = {
-			id: notes.length + 1,
-			content: newNote,
-			date: new Date().toISOString(),
-			important: Math.random() < 0.5 //simple variable para que la mitad de elementos sean true y los otros false
+			title: newNote,
+			body: newNote,
+			userdId: 1
 		}
-		setNotes(notes.concat(noteToAddToState)) //no hay que mutar en react. Por lo que a notes le agregamos la nota
+		createNote(noteToAddToState)
+		.then(nota => {
+			setNotes((prevNotes) => prevNotes.concat(nota))
+		})
+		.catch((e) =>{
+			console.error(e)
+		})
+
 		setNewNote("") //simplemente reseteamos el input
 	}
-
-	const handleShowAll = () =>{
-		setShowAll(() => !showAll)
-	} //una simple funcion. SI se toca el boton cambia el texto mostrado
 
 	return (
 		<div>
 			<h1>Notes</h1>
-			<button onClick={handleShowAll}>{showAll ? "Show only important" : "Show All"}</button>
+			{ loading ? "Cargando..." : ""}
+
 			{
 				notes
-				.filter(note => {
-					if(showAll === true){
-						return note
-					} else{
-						return note.important === true
-					}
-				}) //filter para mostrar notas segun si show all o only esta activado 
-				.map(note => <Note key={note.id} content={note.content} date={note.date}/>)
+				.map(note => <Note key={note.id} {...note}/>)
 			} 
 			<form onSubmit={handleSubmit}>
 				<input type="text" onChange={handleChange} value={newNote}/>   
