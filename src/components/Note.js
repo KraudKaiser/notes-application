@@ -1,4 +1,6 @@
-export const Note = ({id, content, date}) =>{
+export const Note = (props) =>{
+	const {content, date} = props
+
 	return <div>
 		<p>
 			{content}
