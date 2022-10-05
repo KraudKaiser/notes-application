@@ -10,6 +10,10 @@ const App = () => { //declaramos las props para recibir las notas del index.js
 	const [notes, setNotes] = useState([]) //el valor inicial del useState son todas las notas del Index
 	const [newNote, setNewNote] = useState("")
 	const [loading, setLoading] = useState(false)
+
+	const [username, setUsername] = useState("")
+	const [password, setPassword] = useState("")
+
 	useEffect(() => {
 		setLoading(true)
 		getAllNotes().then((notes) =>{
@@ -27,7 +31,7 @@ const App = () => { //declaramos las props para recibir las notas del index.js
 	//input recibe una variable OnChange que usa este handle change. Manejando que hacer cuando algo cambia en el input
 
 
-	const handleSubmit = (event) =>{
+	const handleNoteChange = (event) =>{
 		event.preventDefault()
 
 		const noteToAddToState = {
@@ -46,16 +50,40 @@ const App = () => { //declaramos las props para recibir las notas del index.js
 		setNewNote("") //simplemente reseteamos el input
 	}
 
+	const handleSubmit = (event) =>{
+		event.preventDefault()
+
+		console.log("this is submit")
+	}
+
 	return (
 		<div>
 			<h1>Notes</h1>
 			{ loading ? "Cargando..." : ""}
-
+		<form onSubmit={handleSubmit}>
+			<input
+			type="text"
+			value={username}
+			name="Username"
+			placeholder="Username"
+			onChange={({target}) => setUsername(target.value)}
+			/>
+			<input
+			type="text"
+			value={password}
+			name="Password"
+			placeholder="Password"
+			onChange={({target}) => setPassword(target.value)}
+			/>
+			<button>
+				Login
+			</button>
+		</form>
 			{
 				notes
 				.map(note => <Note key={note.id} {...note}/>)
 			} 
-			<form onSubmit={handleSubmit}>
+			<form onSubmit={handleNoteChange}>
 				<input type="text" onChange={handleChange} value={newNote}/>   
 				<button>Crear Nota</button>
 			</form>
