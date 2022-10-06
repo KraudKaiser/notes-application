@@ -2,20 +2,28 @@ import React, { useState, useEffect } from 'react'
 import Note from './components/Note'
 import Notification from './components/Notification'
 import noteService from './services/notes'
+import loginService from "./services/login"
 
 const App = () => {
   const [notes, setNotes] = useState([]) 
   const [newNote, setNewNote] = useState('')
   const [showAll, setShowAll] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [user, setUser] = useState(null)
 
-  useEffect(() => {
+
+ //todos los hooks de estados. Para obtener notar, crearlas, como mostrarlas y errores de mensaje
+ //tambien de usuario y contraseña
+  
+ useEffect(() => {
     noteService
       .getAll()
       .then(initialNotes => {
         setNotes(initialNotes)
       })
-  }, [])
+  }, []) 
 
   const addNote = (event) => {
     event.preventDefault()
@@ -61,10 +69,44 @@ const App = () => {
     ? notes
     : notes.filter(note => note.important)
 
+  const handleLogin = async (event) =>{
+	event.preventDefault()
+	loginService.login({
+		username,
+		password
+	})
+  }
+
   return (
     <div>
       <h1>Notes</h1>
       <Notification message={errorMessage} />
+		<div>
+			
+			<form onSubmit={handleLogin}>
+				<div>
+					<input 
+						type="text"
+						value={username}
+						placeholder='Username'
+						name='Username'
+						onChange={({target}) => setUsername(target.value)}
+					/>
+				</div>
+				<div>
+					<input 
+						type="text"
+						value={password}
+						placeholder='Password'
+						name='Password'
+						onChange={({target}) => setPassword(target.value)}
+					/>
+				</div>
+				<button>
+					Login
+				</button>
+			</form>
+		</div> 
       <div>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all' }
