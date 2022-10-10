@@ -4,6 +4,8 @@ import Notification from './components/Notification'
 import noteService from './services/notes'
 import loginService from "./services/login"
 
+import LoginForm from "./components/LoginForm"
+
 const App = () => {
   const [notes, setNotes] = useState([]) 
   const [newNote, setNewNote] = useState('')
@@ -108,37 +110,7 @@ const App = () => {
 	}
   }
 
-  const renderLoginForm = () =>{
-	return(
-		<div>
-			
-			<form onSubmit={handleLogin}>
-				<div>
-					<input 
-						type="text"
-						value={username}
-						placeholder='Username'
-						name='Username'
-						onChange={({target}) => setUsername(target.value)}
-					/>
-				</div>
-				<div>
-					<input 
-						type="password"
-						value={password}
-						placeholder='Password'
-						name='Password'
-						onChange={({target}) => setPassword(target.value)}
-					/>
-				</div>
-				<button>
-					Login
-				</button>
-			</form>
-		</div> 
-	)
-	
-  }
+  
 
   const renderCreateNoteForm = () => {
 	return (
@@ -167,7 +139,13 @@ const App = () => {
 	  {
 		user 
 		? renderCreateNoteForm()
-		: renderLoginForm()
+		: <LoginForm 
+			username={username}
+			password={password}
+			handleUsernameChange={({target}) => setUsername(target.value)}
+			handlePasswordChange={({target}) => setPassword(target.value)}
+			handleSubmit={handleLogin }
+		/>
 	  }
 
       <div>
