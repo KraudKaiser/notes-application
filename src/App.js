@@ -23,15 +23,28 @@ const App = () => {
       .then(initialNotes => {
         setNotes(initialNotes)
       })
-  }, []) 
+  }, [])  // UseEffect para poder mostrar y cargar las notas en pantalla
+
+  useEffect(() =>{
+	const loggedUserJSON = window.localStorage.getItem("loggedNoteAppUser")
+	if(loggedUserJSON){
+		const user = JSON.parse(loggedUserJSON)
+		setUser(user)
+		noteService.setToken(user.token)
+	}
+  }, []) // Use Effect que, si encuetnra un usuario logeado en localstorage, setea el estado de usuario con los datos y se logea solo
+
+  const handleLogout = () =>{ 
+	setUser(null)
+	noteService.setToken(user.token)
+	window.localStorage.removeItem("loggedNoteAppUser")
+  }
 
   const addNote = (event) => {
     event.preventDefault()
     const noteObject = {
       content: newNote,
-      date: new Date().toISOString(),
-      important: Math.random() > 0.5,
-      id: notes.length + 1,
+      important: Math.random() > 0.5
     }
   
     noteService
@@ -71,16 +84,32 @@ const App = () => {
 
   const handleLogin = async (event) =>{
 	event.preventDefault()
-	loginService.login({
-		username,
-		password
-	})
+	try{
+		const user = await loginService.login({
+			username,
+			password
+		})
+		
+		window.localStorage.setItem(
+			"loggedNoteAppUser", JSON.stringify(user)
+		)
+		noteService.setToken(user.token)
+
+
+		 setUser(user)
+		 setUsername("")
+		 setPassword("")  
+	}
+	catch(e){
+		setErrorMessage("Wrong Credentials")
+		setTimeout(() => {
+			setErrorMessage(null)
+		}, 5000)
+	}
   }
 
-  return (
-    <div>
-      <h1>Notes</h1>
-      <Notification message={errorMessage} />
+  const renderLoginForm = () =>{
+	return(
 		<div>
 			
 			<form onSubmit={handleLogin}>
@@ -95,7 +124,7 @@ const App = () => {
 				</div>
 				<div>
 					<input 
-						type="text"
+						type="password"
 						value={password}
 						placeholder='Password'
 						name='Password'
@@ -107,6 +136,40 @@ const App = () => {
 				</button>
 			</form>
 		</div> 
+	)
+	
+  }
+
+  const renderCreateNoteForm = () => {
+	return (
+		<>
+		<form onSubmit={addNote}>
+        	<input
+				placeholder='Write your note content'
+          		value={newNote}
+          		onChange={handleNoteChange}
+        	/>
+        	<button type="submit">save</button>
+      </form>
+	  <div>
+			<button onClick={handleLogout}>
+				Logout
+			</button>
+	  </div>
+	  </> 
+	)
+  }
+  return (
+    <div>
+      <h1>Notes</h1>
+      <Notification message={errorMessage} />
+
+	  {
+		user 
+		? renderCreateNoteForm()
+		: renderLoginForm()
+	  }
+
       <div>
         <button onClick={() => setShowAll(!showAll)}>
           show {showAll ? 'important' : 'all' }
@@ -116,18 +179,12 @@ const App = () => {
         {notesToShow.map((note, i) => 
           <Note
             key={i}
-            note={note} 
+            note={note}
             toggleImportance={() => toggleImportanceOf(note.id)}
-          />
+          /> 
         )}
       </ul>
-      <form onSubmit={addNote}>
-        <input
-          value={newNote}
-          onChange={handleNoteChange}
-        />
-        <button type="submit">save</button>
-      </form>   
+          
     </div>
   )
 }
