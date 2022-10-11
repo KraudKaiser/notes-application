@@ -5,10 +5,9 @@ import noteService from './services/notes'
 import loginService from "./services/login"
 
 import LoginForm from "./components/LoginForm"
-
+import NoteForm from "./components/NoteForm"
 const App = () => {
   const [notes, setNotes] = useState([]) 
-  const [newNote, setNewNote] = useState('')
   const [showAll, setShowAll] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
   const [username, setUsername] = useState("")
@@ -42,18 +41,11 @@ const App = () => {
 	window.localStorage.removeItem("loggedNoteAppUser")
   }
 
-  const addNote = (event) => {
-    event.preventDefault()
-    const noteObject = {
-      content: newNote,
-      important: Math.random() > 0.5
-    }
-  
+  const addNote = (noteObject) => {
     noteService
       .create(noteObject)
       .then(returnedNote => {
         setNotes(notes.concat(returnedNote))
-        setNewNote('')
       })
   }
 
@@ -74,10 +66,6 @@ const App = () => {
           setErrorMessage(null)
         }, 5000)   
       })
-  }
-
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value)
   }
 
   const notesToShow = showAll
@@ -110,35 +98,18 @@ const App = () => {
 	}
   }
 
-  
-
-  const renderCreateNoteForm = () => {
-	return (
-		<>
-		<form onSubmit={addNote}>
-        	<input
-				placeholder='Write your note content'
-          		value={newNote}
-          		onChange={handleNoteChange}
-        	/>
-        	<button type="submit">save</button>
-      </form>
-	  <div>
-			<button onClick={handleLogout}>
-				Logout
-			</button>
-	  </div>
-	  </> 
-	)
-  }
   return (
     <div>
       <h1>Notes</h1>
+
       <Notification message={errorMessage} />
 
 	  {
 		user 
-		? renderCreateNoteForm()
+		? <NoteForm 
+			addNote={addNote}
+			handleLogout={handleLogout}
+		/>
 		: <LoginForm 
 			username={username}
 			password={password}
@@ -156,13 +127,12 @@ const App = () => {
       <ul>
         {notesToShow.map((note, i) => 
           <Note
-            key={i}
-            note={note}
-            toggleImportance={() => toggleImportanceOf(note.id)}
+            	key={i}
+            	note={note}
+           	 	toggleImportance={() => toggleImportanceOf(note.id)}
           /> 
         )}
       </ul>
-          
     </div>
   )
 }

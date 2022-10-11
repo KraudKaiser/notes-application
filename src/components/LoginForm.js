@@ -1,20 +1,9 @@
-import React, {useState} from "react"
-
+import React from "react"
+import Togglable from "./Togglable"
 export default function LoginForm({handleSubmit, ...props}) {
 
-	const [loginVisible, setLoginVisible] = useState(false)
- // cargamos un estado para ver si el formulario de login es visible o no
-	const hiddenWhenVissible = {display:loginVisible ? "none" : ""}
-	const showWhenVissible = {display:loginVisible ? "" : "none"}
-	// y tenemos unas constantes para los estilos de los dos divs de abajo
-	return(
-		<div>
-			
-			<div style={hiddenWhenVissible}> 
-				<button onClick={() => setLoginVisible(true)}> Show Login</button>
-			</div>
-
-			<div style={showWhenVissible}>
+	return (
+		<Togglable buttonLabel="Show Login">
 				<form onSubmit={handleSubmit}>
 					<div>
 						<input 
@@ -38,9 +27,7 @@ export default function LoginForm({handleSubmit, ...props}) {
 						Login
 					</button>
 				</form>
-				<button onClick={() => setLoginVisible(false)}> Cancel</button>
-			</div>
-		</div> 
+		</Togglable> 
 	)
 	
   }
