@@ -6,7 +6,7 @@ export default function LoginForm({handleSubmit, ...props}) {
 		<Togglable buttonLabel="Show Login">
 				<form onSubmit={handleSubmit}>
 					<div>
-						<input 
+						<input
 							type="text"
 							value={props.username}
 							placeholder='Username'
